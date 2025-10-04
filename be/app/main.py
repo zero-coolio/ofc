@@ -20,6 +20,11 @@ def on_startup():
     init_db()
 
 
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run("app.main:app", host="127.0.0.1", port=8000, reload=True)
+
 app.include_router(categories.router)
 app.include_router(transactions.router)
 app.include_router(dashboard.router)

@@ -7,7 +7,7 @@ from sqlmodel import Session, select
 
 from app.database import get_session
 from app.schemas import BalancePoint
-from app.services.transaction_service import TransactionService
+from app.services.transaction_service import TransactionService, get_service
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
@@ -15,16 +15,28 @@ from app.models import User
 from app.security import get_current_user
 
 
-# @router.get("/balance", response_model=None)
-# , response_model=List[BalancePoint])
+@router.get("/foo", response_model=BalancePoint)
+def get_foo(
+        session: Session = Depends(get_session),
+        user: User = Depends(get_current_user),
+        start: date | None = Query(default=None),
+        end: date | None = Query(default=None),
+        group_by: Literal["day", "week", "month"] = Query(default="day"),
+        transaction_service: TransactionService = Depends(get_service),
+):
+    return BalancePoint()
+
+
+@router.get("/balance", response_model=List[BalancePoint])
 def balance_series(
         session: Session = Depends(get_session),
         user: User = Depends(get_current_user),
         start: date | None = Query(default=None),
         end: date | None = Query(default=None),
         group_by: Literal["day", "week", "month"] = Query(default="day"),
-        transaction_service: TransactionService = Depends(TransactionService),
+        transaction_service: TransactionService = Depends(get_service),
 ) -> List[BalancePoint]:
+    session = get_session()
     series: List[BalancePoint] = []
     response: List[BalancePoint] = transaction_service.get_transactions(
         start, end, user, session, group_by

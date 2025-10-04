@@ -10,7 +10,7 @@ from app.schemas import BalancePoint
 
 class TransactionService:
 
-    def __init__(self, session: Session):
+    def __init__(self):
         print("transaction_service")
 
     def next_period(self, d: date, group_by: Literal["day", "week", "month"]) -> date:
@@ -85,3 +85,10 @@ class TransactionService:
             series.append(BalancePoint(label=label, balance=round(running, 2)))
             cur = self.next_period(cur)
         return series
+
+
+transaction_service = TransactionService()
+
+
+def get_service():
+    return transaction_service
