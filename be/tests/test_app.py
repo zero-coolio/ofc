@@ -5,6 +5,11 @@ from fastapi.testclient import TestClient
 
 from app.main import app
 
+from app.database import init_db
+
+# Make sure the DB schema exists before tests run
+init_db()
+
 client = TestClient(app)
 
 
@@ -33,7 +38,8 @@ def test_full_flow():
 
     # Create transactions
     r = client.post("/transactions", json={
-        "amount": 1000.0, "kind": "credit", "occurred_at": "2025-10-01", "description": "Paycheck", "category_id": cat_income["id"]
+        "amount"     : 1000.0, "kind": "credit", "occurred_at": "2025-10-01", "description": "Paycheck",
+        "category_id": cat_income["id"]
     }, headers=headers)
     assert r.status_code == 201, r.text
     t1 = r.json()
@@ -43,7 +49,8 @@ def test_full_flow():
     cat_gro = r.json()
 
     r = client.post("/transactions", json={
-        "amount": 50.0, "kind": "debit", "occurred_at": "2025-10-02", "description": "Milk", "category_id": cat_gro["id"]
+        "amount"     : 50.0, "kind": "debit", "occurred_at": "2025-10-02", "description": "Milk",
+        "category_id": cat_gro["id"]
     }, headers=headers)
     assert r.status_code == 201, r.text
     t2 = r.json()

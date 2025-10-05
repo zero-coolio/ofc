@@ -13,7 +13,9 @@ router = APIRouter(prefix="/users", tags=["users"])
 @router.post("", response_model=UserRead, status_code=status.HTTP_201_CREATED)
 def create_user(payload: UserCreate, session: Session = Depends(get_session)):
     # Bootstrap the first user when DB is empty.
-    existing = session.exec(select(User)).all()
+    sel = select(User)
+    r = session.exec(sel)
+    existing = r.all()
     if existing:
         raise HTTPException(status_code=403, detail="Users already exist. Use /users/create with a valid API key.")
     try:
@@ -23,7 +25,8 @@ def create_user(payload: UserCreate, session: Session = Depends(get_session)):
 
 
 @router.post("/create", response_model=UserRead, status_code=status.HTTP_201_CREATED)
-def create_user_authenticated(payload: UserCreate, session: Session = Depends(get_session), _: User = Depends(get_current_user)):
+def create_user_authenticated(payload: UserCreate, session: Session = Depends(get_session),
+                              _: User = Depends(get_current_user)):
     try:
         return svc.create_user_authenticated(session, email=payload.email, name=payload.name)
     except ValueError as e:

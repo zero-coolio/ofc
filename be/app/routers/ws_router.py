@@ -5,10 +5,11 @@ from typing import Optional
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, status
 from sqlmodel import Session, select
 
-from app.database import engine
+from app.database import get_engine
 from app.models import Transaction, User
 
 router = APIRouter(prefix="/ws", tags=["websocket"])
+engine = get_engine()
 
 
 async def authenticate_ws(websocket: WebSocket, session: Session) -> User:
@@ -41,20 +42,21 @@ async def transactions_stream(websocket: WebSocket):
         poll_interval = 1.0
         sent_ids = set()
 
-        rows = session.exec(select(Transaction).where(Transaction.user_id == user.id).order_by(Transaction.created_at, Transaction.id)).all()
+        rows = session.exec(select(Transaction).where(Transaction.user_id == user.id).order_by(Transaction.created_at,
+                                                                                               Transaction.id)).all()
         for tx in rows:
             if bookmark and tx.created_at <= bookmark:
                 continue
             payload = {
                 "type": "transaction",
                 "data": {
-                    "id": tx.id,
-                    "amount": tx.amount,
-                    "kind": tx.kind.value,
+                    "id"         : tx.id,
+                    "amount"     : tx.amount,
+                    "kind"       : tx.kind.value,
                     "occurred_at": tx.occurred_at.isoformat(),
                     "description": tx.description,
                     "category_id": tx.category_id,
-                    "created_at": tx.created_at.replace(tzinfo=None).isoformat() + "Z",
+                    "created_at" : tx.created_at.replace(tzinfo=None).isoformat() + "Z",
                 },
             }
             await websocket.send_json(payload)
@@ -65,7 +67,9 @@ async def transactions_stream(websocket: WebSocket):
         try:
             while True:
                 await asyncio.sleep(poll_interval)
-                new_rows = session.exec(select(Transaction).where(Transaction.user_id == user.id).order_by(Transaction.created_at, Transaction.id)).all()
+                new_rows = session.exec(
+                    select(Transaction).where(Transaction.user_id == user.id).order_by(Transaction.created_at,
+                                                                                       Transaction.id)).all()
                 for tx in new_rows:
                     if tx.id in sent_ids:
                         continue
@@ -74,13 +78,13 @@ async def transactions_stream(websocket: WebSocket):
                     payload = {
                         "type": "transaction",
                         "data": {
-                            "id": tx.id,
-                            "amount": tx.amount,
-                            "kind": tx.kind.value,
+                            "id"         : tx.id,
+                            "amount"     : tx.amount,
+                            "kind"       : tx.kind.value,
                             "occurred_at": tx.occurred_at.isoformat(),
                             "description": tx.description,
                             "category_id": tx.category_id,
-                            "created_at": tx.created_at.replace(tzinfo=None).isoformat() + "Z",
+                            "created_at" : tx.created_at.replace(tzinfo=None).isoformat() + "Z",
                         },
                     }
                     await websocket.send_json(payload)
