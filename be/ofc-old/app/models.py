@@ -34,7 +34,7 @@ class Category(SQLModel, table=True):
 
 class Transaction(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    amount: float = Field(gt=0)
+    amount: float = Field(gt=0)  # always positive; Kind controls sign
     kind: Kind
     occurred_at: date
     description: Optional[str] = None

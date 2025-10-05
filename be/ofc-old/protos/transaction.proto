@@ -12,8 +12,11 @@ message Transaction {
   int32 id = 1;
   double amount = 2;
   Kind kind = 3;
-  string occurred_at = 4;  // YYYY-MM-DD
+  // ISO-8601 "YYYY-MM-DD"
+  string occurred_at = 4;
   string description = 5;
-  int32 category_id = 6;   // 0 if null
-  string created_at = 7;   // RFC3339
+  // nullable; 0 means null if a language can't handle optional ints
+  int32 category_id = 6;
+  // RFC3339 timestamp (UTC)
+  string created_at = 7;
 }

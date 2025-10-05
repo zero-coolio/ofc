@@ -1,10 +1,28 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import init_db
-from app.routers import categories, transactions, dashboard, import_export, users, ws
+from app.routers import (
+    categories_router,
+    transactions_router,
+    dashboard_router,
+    import_export_router,
+    users_router,
+    ws_router,
+)
 
-app = FastAPI(title="OFC Transactions API", version="2.0.0")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup logic
+    init_db()
+    yield
+    # Shutdown logic (optional)
+    print("🔻 Application shutdown complete")
+
+
+app = FastAPI(title="OFC API", version="1.0.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -14,25 +32,21 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Routers
+app.include_router(categories_router.router)
+app.include_router(transactions_router.router)
+app.include_router(dashboard_router.router)
+app.include_router(import_export_router.router)
+app.include_router(users_router.router)
+app.include_router(ws_router.router)
 
-@app.on_event("startup")
-def on_startup():
-    init_db()
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
 
 
 if __name__ == "__main__":
     import uvicorn
 
     uvicorn.run("app.main:app", host="127.0.0.1", port=8000, reload=True)
-
-app.include_router(categories.router)
-app.include_router(transactions.router)
-app.include_router(dashboard.router)
-app.include_router(import_export.router)
-app.include_router(users.router)
-app.include_router(ws.router)
-
-
-@app.get("/health")
-def health():
-    return {"status": "ok"}
