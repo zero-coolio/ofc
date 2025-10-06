@@ -3,7 +3,6 @@ from datetime import date
 from sqlmodel import Session, select
 from app.models import User, Category, Transaction, Kind
 
-
 class UserRepo:
     def __init__(self, session: Session):
         self.session = session
@@ -23,7 +22,6 @@ class UserRepo:
         self.session.commit()
         self.session.refresh(user)
         return user
-
 
 class CategoryRepo:
     def __init__(self, session: Session):
@@ -52,7 +50,6 @@ class CategoryRepo:
     def delete(self, category: Category) -> None:
         self.session.delete(category)
         self.session.commit()
-
 
 class TransactionRepo:
     def __init__(self, session: Session):

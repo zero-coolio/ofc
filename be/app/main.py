@@ -12,7 +12,6 @@ from app.routers import (
     ws_router,
 )
 
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup logic
@@ -20,7 +19,6 @@ async def lifespan(app: FastAPI):
     yield
     # Shutdown logic (optional)
     print("🔻 Application shutdown complete")
-
 
 app = FastAPI(title="OFC API", version="1.0.0", lifespan=lifespan)
 
@@ -32,7 +30,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Routers
 app.include_router(categories_router.router)
 app.include_router(transactions_router.router)
 app.include_router(dashboard_router.router)
@@ -40,13 +37,10 @@ app.include_router(import_export_router.router)
 app.include_router(users_router.router)
 app.include_router(ws_router.router)
 
-
 @app.get("/health")
 def health():
     return {"status": "ok"}
 
-
 if __name__ == "__main__":
     import uvicorn
-
     uvicorn.run("app.main:app", host="127.0.0.1", port=8000, reload=True)
