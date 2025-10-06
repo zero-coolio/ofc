@@ -9,7 +9,6 @@ from app.services import categories_service as svc
 
 router = APIRouter(prefix="/categories", tags=["categories"])
 
-
 @router.post("", response_model=CategoryRead, status_code=status.HTTP_201_CREATED)
 def create_category(payload: CategoryCreate, session: Session = Depends(get_session), user: User = Depends(get_current_user)):
     try:
@@ -17,11 +16,9 @@ def create_category(payload: CategoryCreate, session: Session = Depends(get_sess
     except ValueError as e:
         raise HTTPException(status_code=409, detail=str(e))
 
-
 @router.get("", response_model=list[CategoryRead])
 def list_categories(session: Session = Depends(get_session), user: User = Depends(get_current_user)):
     return svc.list_categories(session, user_id=user.id)
-
 
 @router.delete("/{category_id}", status_code=204)
 def delete_category(category_id: int, session: Session = Depends(get_session), user: User = Depends(get_current_user)):

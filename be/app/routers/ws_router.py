@@ -9,8 +9,6 @@ from app.database import get_engine
 from app.models import Transaction, User
 
 router = APIRouter(prefix="/ws", tags=["websocket"])
-engine = get_engine()
-
 
 async def authenticate_ws(websocket: WebSocket, session: Session) -> User:
     api_key = websocket.query_params.get("api_key") or websocket.headers.get("x-api-key")
@@ -23,11 +21,10 @@ async def authenticate_ws(websocket: WebSocket, session: Session) -> User:
         raise WebSocketDisconnect(code=status.WS_1008_POLICY_VIOLATION)
     return user
 
-
 @router.websocket("/transactions")
 async def transactions_stream(websocket: WebSocket):
     await websocket.accept()
-    with Session(engine) as session:
+    with Session(get_engine()) as session:
         user = await authenticate_ws(websocket, session)
 
         since = websocket.query_params.get("since")
@@ -42,21 +39,22 @@ async def transactions_stream(websocket: WebSocket):
         poll_interval = 1.0
         sent_ids = set()
 
-        rows = session.exec(select(Transaction).where(Transaction.user_id == user.id).order_by(Transaction.created_at,
-                                                                                               Transaction.id)).all()
+        rows = session.exec(
+            select(Transaction).where(Transaction.user_id == user.id).order_by(Transaction.created_at, Transaction.id)
+        ).all()
         for tx in rows:
             if bookmark and tx.created_at <= bookmark:
                 continue
             payload = {
                 "type": "transaction",
                 "data": {
-                    "id"         : tx.id,
-                    "amount"     : tx.amount,
-                    "kind"       : tx.kind.value,
+                    "id": tx.id,
+                    "amount": tx.amount,
+                    "kind": tx.kind.value,
                     "occurred_at": tx.occurred_at.isoformat(),
                     "description": tx.description,
                     "category_id": tx.category_id,
-                    "created_at" : tx.created_at.replace(tzinfo=None).isoformat() + "Z",
+                    "created_at": tx.created_at.replace(tzinfo=None).isoformat() + "Z",
                 },
             }
             await websocket.send_json(payload)
@@ -68,8 +66,8 @@ async def transactions_stream(websocket: WebSocket):
             while True:
                 await asyncio.sleep(poll_interval)
                 new_rows = session.exec(
-                    select(Transaction).where(Transaction.user_id == user.id).order_by(Transaction.created_at,
-                                                                                       Transaction.id)).all()
+                    select(Transaction).where(Transaction.user_id == user.id).order_by(Transaction.created_at, Transaction.id)
+                ).all()
                 for tx in new_rows:
                     if tx.id in sent_ids:
                         continue
@@ -78,13 +76,13 @@ async def transactions_stream(websocket: WebSocket):
                     payload = {
                         "type": "transaction",
                         "data": {
-                            "id"         : tx.id,
-                            "amount"     : tx.amount,
-                            "kind"       : tx.kind.value,
+                            "id": tx.id,
+                            "amount": tx.amount,
+                            "kind": tx.kind.value,
                             "occurred_at": tx.occurred_at.isoformat(),
                             "description": tx.description,
                             "category_id": tx.category_id,
-                            "created_at" : tx.created_at.replace(tzinfo=None).isoformat() + "Z",
+                            "created_at": tx.created_at.replace(tzinfo=None).isoformat() + "Z",
                         },
                     }
                     await websocket.send_json(payload)

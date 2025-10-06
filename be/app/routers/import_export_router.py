@@ -1,14 +1,12 @@
 from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
 from fastapi.responses import StreamingResponse
 from sqlmodel import Session
-
 from app.database import get_session
 from app.security import get_current_user
 from app.models import User
 from app.services import import_export_service as svc
 
 router = APIRouter(prefix="/io", tags=["import-export"])
-
 
 @router.post("/import/csv")
 async def import_csv(file: UploadFile = File(...), session: Session = Depends(get_session), user: User = Depends(get_current_user)):
@@ -20,7 +18,6 @@ async def import_csv(file: UploadFile = File(...), session: Session = Depends(ge
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     return {"imported": created}
-
 
 @router.get("/export/csv")
 def export_csv(session: Session = Depends(get_session), user: User = Depends(get_current_user)):

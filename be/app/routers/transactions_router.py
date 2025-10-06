@@ -10,14 +10,12 @@ from app.services import transactions_service as svc
 
 router = APIRouter(prefix="/transactions", tags=["transactions"])
 
-
 @router.post("", response_model=TransactionRead, status_code=status.HTTP_201_CREATED)
 def create_transaction(payload: TransactionCreate, session: Session = Depends(get_session), user: User = Depends(get_current_user)):
     try:
         return svc.create_transaction(session, user_id=user.id, **payload.model_dump())
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
-
 
 @router.get("", response_model=list[TransactionRead])
 def list_transactions(
@@ -28,14 +26,12 @@ def list_transactions(
 ):
     return svc.list_transactions(session, user_id=user.id, kind=kind, category_id=category_id)
 
-
 @router.get("/{tx_id}", response_model=TransactionRead)
 def get_transaction(tx_id: int, session: Session = Depends(get_session), user: User = Depends(get_current_user)):
     try:
         return svc.get_transaction(session, user_id=user.id, tx_id=tx_id)
     except LookupError:
         raise HTTPException(status_code=404, detail="Transaction not found")
-
 
 @router.patch("/{tx_id}", response_model=TransactionRead)
 def update_transaction(tx_id: int, payload: TransactionUpdate, session: Session = Depends(get_session), user: User = Depends(get_current_user)):
@@ -45,7 +41,6 @@ def update_transaction(tx_id: int, payload: TransactionUpdate, session: Session 
         raise HTTPException(status_code=404, detail="Transaction not found")
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
-
 
 @router.delete("/{tx_id}", status_code=204)
 def delete_transaction(tx_id: int, session: Session = Depends(get_session), user: User = Depends(get_current_user)):
