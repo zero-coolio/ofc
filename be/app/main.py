@@ -14,8 +14,11 @@ from app.routers import (
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Startup logic
     init_db()
     yield
+    # Shutdown logic (optional)
+    print("🔻 Application shutdown complete")
 
 app = FastAPI(title="OFC API", version="1.0.0", lifespan=lifespan)
 
