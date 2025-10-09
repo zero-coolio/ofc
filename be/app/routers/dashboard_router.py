@@ -22,7 +22,9 @@ def balance_series(
     end: date | None = Query(default=None),
     group_by: Literal["day", "week", "month"] = Query(default="day"),
 ):
-    return svc.balance_series(session, user_id=user.id, start=start, end=end, group_by=group_by)
+    return svc.balance_series(
+        session, user_id=user.id, start=start, end=end, group_by=group_by
+    )
 
 
 @router.get("", response_class=HTMLResponse)

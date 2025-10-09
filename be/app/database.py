@@ -15,7 +15,9 @@ def get_engine(suffix: str = ".db"):
     if not eng:
         eng = create_engine(
             url,
-            connect_args={"check_same_thread": False} if url.startswith("sqlite") else {},
+            connect_args=(
+                {"check_same_thread": False} if url.startswith("sqlite") else {}
+            ),
         )
     return eng
 
@@ -27,5 +29,5 @@ def init_db(suffix: str = None) -> Engine:
 
 
 def get_session():
-    with Session(engine) as session:
+    with Session(eng) as session:
         yield session

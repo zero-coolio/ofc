@@ -37,10 +37,17 @@ def test_full_flow():
     cat_income = r.json()
 
     # Create transactions
-    r = client.post("/transactions", json={
-        "amount"     : 1000.0, "kind": "credit", "occurred_at": "2025-10-01", "description": "Paycheck",
-        "category_id": cat_income["id"]
-    }, headers=headers)
+    r = client.post(
+        "/transactions",
+        json={
+            "amount": 1000.0,
+            "kind": "credit",
+            "occurred_at": "2025-10-01",
+            "description": "Paycheck",
+            "category_id": cat_income["id"],
+        },
+        headers=headers,
+    )
     assert r.status_code == 201, r.text
     t1 = r.json()
 
@@ -48,10 +55,17 @@ def test_full_flow():
     assert r.status_code == 201, r.text
     cat_gro = r.json()
 
-    r = client.post("/transactions", json={
-        "amount"     : 50.0, "kind": "debit", "occurred_at": "2025-10-02", "description": "Milk",
-        "category_id": cat_gro["id"]
-    }, headers=headers)
+    r = client.post(
+        "/transactions",
+        json={
+            "amount": 50.0,
+            "kind": "debit",
+            "occurred_at": "2025-10-02",
+            "description": "Milk",
+            "category_id": cat_gro["id"],
+        },
+        headers=headers,
+    )
     assert r.status_code == 201, r.text
     t2 = r.json()
 
@@ -74,7 +88,9 @@ def test_full_flow():
     assert "Paycheck" in csv_text and "Milk" in csv_text
 
     # Import CSV (add one more credit)
-    csv_payload = "occurred_at,amount,kind,description,category\n2025-10-03,25.00,credit,Gift,\n"
+    csv_payload = (
+        "occurred_at,amount,kind,description,category\n2025-10-03,25.00,credit,Gift,\n"
+    )
     files = {"file": ("import.csv", csv_payload, "text/csv")}
     r = client.post("/io/import/csv", headers=headers, files=files)
     assert r.status_code == 200, r.text

@@ -58,7 +58,12 @@ class TransactionRepo:
     def __init__(self, session: Session):
         self.session = session
 
-    def list_for_user(self, user_id: int, kind: Optional[Kind] = None, category_id: Optional[int] = None) -> List[Transaction]:
+    def list_for_user(
+        self,
+        user_id: int,
+        kind: Optional[Kind] = None,
+        category_id: Optional[int] = None,
+    ) -> List[Transaction]:
         stmt = select(Transaction).where(Transaction.user_id == user_id)
         if kind:
             stmt = stmt.where(Transaction.kind == kind)
@@ -67,7 +72,9 @@ class TransactionRepo:
         stmt = stmt.order_by(Transaction.occurred_at, Transaction.id)
         return self.session.exec(stmt).all()
 
-    def list_in_range_for_user(self, user_id: int, start: Optional[date], end: Optional[date]) -> List[Transaction]:
+    def list_in_range_for_user(
+        self, user_id: int, start: Optional[date], end: Optional[date]
+    ) -> List[Transaction]:
         stmt = select(Transaction).where(Transaction.user_id == user_id)
         if start:
             stmt = stmt.where(Transaction.occurred_at >= start)
@@ -79,10 +86,23 @@ class TransactionRepo:
     def get_by_id(self, tx_id: int) -> Optional[Transaction]:
         return self.session.get(Transaction, tx_id)
 
-    def create(self, user_id: int, *, amount: float, kind: Kind, occurred_at: date, description: Optional[str], category_id: Optional[int]) -> Transaction:
+    def create(
+        self,
+        user_id: int,
+        *,
+        amount: float,
+        kind: Kind,
+        occurred_at: date,
+        description: Optional[str],
+        category_id: Optional[int]
+    ) -> Transaction:
         tx = Transaction(
-            user_id=user_id, amount=amount, kind=kind,
-            occurred_at=occurred_at, description=description, category_id=category_id
+            user_id=user_id,
+            amount=amount,
+            kind=kind,
+            occurred_at=occurred_at,
+            description=description,
+            category_id=category_id,
         )
         self.session.add(tx)
         self.session.commit()

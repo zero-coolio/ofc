@@ -5,6 +5,7 @@ Usage:
 Optional:
     OFC_DATABASE_URL=sqlite:///./ofc.db python scripts/seed_test_data.py
 """
+
 import os
 from datetime import datetime, date
 from app.database import get_engine
@@ -29,20 +30,22 @@ def seed():
     with Session(eng) as s:
         # Users
         alice, _ = get_or_create(
-            s, User,
+            s,
+            User,
             email="alice@example.com",
             defaults={
-                "name"      : "Alice",
-                "api_key"   : "alice-api-key-1111111111111111",
+                "name": "Alice",
+                "api_key": "alice-api-key-1111111111111111",
                 "created_at": datetime.fromisoformat("2025-10-01T09:00:00"),
             },
         )
         bob, _ = get_or_create(
-            s, User,
+            s,
+            User,
             email="bob@example.com",
             defaults={
-                "name"      : "Bob",
-                "api_key"   : "bob-api-key-2222222222222222",
+                "name": "Bob",
+                "api_key": "bob-api-key-2222222222222222",
                 "created_at": datetime.fromisoformat("2025-10-01T09:05:00"),
             },
         )
@@ -56,59 +59,89 @@ def seed():
 
         # Transactions (Alice)
         get_or_create(
-            s, Transaction,
+            s,
+            Transaction,
             id=1,
             defaults=dict(
-                amount=2000.00, kind=Kind.credit, occurred_at=date(2025, 10, 1),
-                description="Paycheck", created_at=datetime.fromisoformat("2025-10-01T10:00:00"),
-                user_id=alice.id, category_id=income_a.id
+                amount=2000.00,
+                kind=Kind.credit,
+                occurred_at=date(2025, 10, 1),
+                description="Paycheck",
+                created_at=datetime.fromisoformat("2025-10-01T10:00:00"),
+                user_id=alice.id,
+                category_id=income_a.id,
             ),
         )
         get_or_create(
-            s, Transaction,
+            s,
+            Transaction,
             id=2,
             defaults=dict(
-                amount=75.50, kind=Kind.debit, occurred_at=date(2025, 10, 2),
-                description="Groceries", created_at=datetime.fromisoformat("2025-10-02T12:00:00"),
-                user_id=alice.id, category_id=groc_a.id
+                amount=75.50,
+                kind=Kind.debit,
+                occurred_at=date(2025, 10, 2),
+                description="Groceries",
+                created_at=datetime.fromisoformat("2025-10-02T12:00:00"),
+                user_id=alice.id,
+                category_id=groc_a.id,
             ),
         )
         get_or_create(
-            s, Transaction,
+            s,
+            Transaction,
             id=3,
             defaults=dict(
-                amount=1200.00, kind=Kind.debit, occurred_at=date(2025, 10, 3),
-                description="October Rent", created_at=datetime.fromisoformat("2025-10-03T08:30:00"),
-                user_id=alice.id, category_id=rent_a.id
+                amount=1200.00,
+                kind=Kind.debit,
+                occurred_at=date(2025, 10, 3),
+                description="October Rent",
+                created_at=datetime.fromisoformat("2025-10-03T08:30:00"),
+                user_id=alice.id,
+                category_id=rent_a.id,
             ),
         )
         get_or_create(
-            s, Transaction,
+            s,
+            Transaction,
             id=4,
             defaults=dict(
-                amount=20.00, kind=Kind.debit, occurred_at=date(2025, 10, 4),
-                description="Snacks", created_at=datetime.fromisoformat("2025-10-04T14:45:00"),
-                user_id=alice.id, category_id=groc_a.id
+                amount=20.00,
+                kind=Kind.debit,
+                occurred_at=date(2025, 10, 4),
+                description="Snacks",
+                created_at=datetime.fromisoformat("2025-10-04T14:45:00"),
+                user_id=alice.id,
+                category_id=groc_a.id,
             ),
         )
 
         # Transactions (Bob)
         get_or_create(
-            s, Transaction,
+            s,
+            Transaction,
             id=5,
             defaults=dict(
-                amount=1500.00, kind=Kind.credit, occurred_at=date(2025, 10, 1),
-                description="Paycheck", created_at=datetime.fromisoformat("2025-10-01T10:10:00"),
-                user_id=bob.id, category_id=income_b.id
+                amount=1500.00,
+                kind=Kind.credit,
+                occurred_at=date(2025, 10, 1),
+                description="Paycheck",
+                created_at=datetime.fromisoformat("2025-10-01T10:10:00"),
+                user_id=bob.id,
+                category_id=income_b.id,
             ),
         )
         get_or_create(
-            s, Transaction,
+            s,
+            Transaction,
             id=6,
             defaults=dict(
-                amount=300.00, kind=Kind.debit, occurred_at=date(2025, 10, 5),
-                description="Flight", created_at=datetime.fromisoformat("2025-10-05T09:00:00"),
-                user_id=bob.id, category_id=trav_b.id
+                amount=300.00,
+                kind=Kind.debit,
+                occurred_at=date(2025, 10, 5),
+                description="Flight",
+                created_at=datetime.fromisoformat("2025-10-05T09:00:00"),
+                user_id=bob.id,
+                category_id=trav_b.id,
             ),
         )
 
