@@ -1,15 +1,28 @@
-
-from typing import Optional, List
+from typing import Optional, List, Sequence
 from datetime import datetime
-from sqlmodel import Session, select
+from sqlmodel import Session as SqlSession
 from .base import BaseRepository
-from ..models import Transaction
+from app.models import Transaction
+from typing import Optional
+from app.database import open_session
+
+from sqlmodel import Field, Session, SQLModel, create_engine, select
+
+from fastapi import FastAPI, Depends, HTTPException, status
+from app.database import get_session
+
 
 class TransactionRepository(BaseRepository[Transaction]):
-    def __init__(self, session: Session):
+    def __init__(self, session: SqlSession):
         super().__init__(session, Transaction)
 
-    def list_filtered(self, category: Optional[str]=None, type_: Optional[str]=None, start: Optional[datetime]=None, end: Optional[datetime]=None) -> List[Transaction]:
+    def list_filtered(
+            self,
+            category: Optional[str] = None,
+            type_: Optional[str] = None,
+            start: Optional[datetime] = None,
+            end: Optional[datetime] = None,
+    ) -> List[Transaction]:
         q = select(Transaction)
         if category:
             q = q.where(Transaction.category == category)
@@ -19,5 +32,8 @@ class TransactionRepository(BaseRepository[Transaction]):
             q = q.where(Transaction.occurred_at >= start)
         if end:
             q = q.where(Transaction.occurred_at < end)
-        q = q.order_by(Transaction.occurred_at.asc())
-        return self.session.exec(q).all()
+        q = q.order_by(Transaction.occurred_at)
+        r = self.session.exec(q)
+        s: Sequence[Transaction] = r.all()
+        l: List[Transaction] = list(s)
+        return l

@@ -1,7 +1,7 @@
 
 #!/usr/bin/env bash
 set -euo pipefail
-: "${PROJECT_ID:=your-gcp-project}"
+: "${PROJECT_ID:=nulleffect-qa}"
 : "${REGION:=us-central1}"
 : "${REPO:=ofc}"
 : "${SERVICE:=ofc-backend}"

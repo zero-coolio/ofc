@@ -1,11 +1,12 @@
-
 from typing import Optional
 from sqlmodel import Session
 from ..models import Category
 from ..schemas import CategoryCreate
 from ..storage.categories_repo import CategoryRepository
 import logging
+
 log = logging.getLogger("ofc.services.categories")
+
 
 class CategoryService:
     def __init__(self, session: Session):

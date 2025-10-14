@@ -1,8 +1,8 @@
-
 from typing import Generic, TypeVar, Type, Optional
 from sqlmodel import SQLModel, Session
 
 T = TypeVar("T", bound=SQLModel)
+
 
 class BaseRepository(Generic[T]):
     def __init__(self, session: Session, model: Type[T]):

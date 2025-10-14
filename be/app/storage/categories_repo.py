@@ -1,8 +1,8 @@
-
 from typing import Optional, List
 from sqlmodel import Session, select
 from .base import BaseRepository
 from ..models import Category
+
 
 class CategoryRepository(BaseRepository[Category]):
     def __init__(self, session: Session):

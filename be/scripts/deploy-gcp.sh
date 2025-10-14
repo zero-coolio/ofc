@@ -1,7 +1,7 @@
 
 #!/usr/bin/env bash
 set -euo pipefail
-: "${PROJECT_ID:?Set PROJECT_ID}"
+: "${PROJECT_ID:=nulleffect-qa}"
 : "${REGION:=us-central1}"
 : "${SERVICE:=ofc-backend}"
 : "${REPO:=ofc}"

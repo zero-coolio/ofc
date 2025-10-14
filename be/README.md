@@ -9,7 +9,7 @@
 ## Local
 
 ```bash
-cd beV3
+cd be
 ./scripts/dev_local.sh
 # http://localhost:8000/docs
 ```
@@ -19,7 +19,7 @@ cd beV3
 ```bash
 export PROJECT_ID=your-gcp-project
 export REGION=us-central1
-cd beV3
+cd be
 ./scripts/build_image_gcp.sh
 ./scripts/deploy_gcp.sh
 ```
