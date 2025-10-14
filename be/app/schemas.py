@@ -1,63 +1,36 @@
-from datetime import date, datetime
-from typing import Optional
+
+from typing import Optional, List
+from datetime import datetime
 from pydantic import BaseModel, Field
-from enum import Enum
 
+class TransactionCreate(BaseModel):
+    amount: float
+    type: str
+    description: str
+    category: Optional[str] = None
+    occurred_at: datetime = Field(..., description="ISO8601 datetime")
 
-class Kind(str, Enum):
-    credit = "credit"
-    debit = "debit"
-
-
-class UserCreate(BaseModel):
-    email: str
-    name: Optional[str] = None
-
-
-class UserRead(BaseModel):
+class TransactionRead(BaseModel):
     id: int
-    email: str
-    name: Optional[str] = None
-    api_key: str
+    amount: float
+    type: str
+    description: str
+    category: Optional[str] = None
+    occurred_at: datetime
     created_at: datetime
 
+class BalancePoint(BaseModel):
+    date: datetime
+    balance: float
+
+class TransactionsResponse(BaseModel):
+    items: List[TransactionRead]
+    total: int
 
 class CategoryCreate(BaseModel):
-    name: str = Field(min_length=1, max_length=100)
-
+    name: str
 
 class CategoryRead(BaseModel):
     id: int
     name: str
     created_at: datetime
-
-
-class TransactionCreate(BaseModel):
-    amount: float = Field(gt=0)
-    kind: Kind
-    occurred_at: date
-    description: Optional[str] = None
-    category_id: Optional[int] = None
-
-
-class TransactionUpdate(BaseModel):
-    amount: Optional[float] = Field(default=None, gt=0)
-    kind: Optional[Kind] = None
-    occurred_at: Optional[date] = None
-    description: Optional[str] = None
-    category_id: Optional[int] = None
-
-
-class TransactionRead(BaseModel):
-    id: int
-    amount: float
-    kind: Kind
-    occurred_at: date
-    description: Optional[str] = None
-    category_id: Optional[int] = None
-    created_at: datetime
-
-
-class BalancePoint(BaseModel):
-    label: str
-    balance: float

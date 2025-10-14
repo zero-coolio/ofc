@@ -1,34 +1,17 @@
-# ---------- Build stage ----------
-FROM node:20-alpine AS builder
+
+FROM node:20-alpine AS build
 WORKDIR /app
-
-# Install deps (lockfile-aware)
-COPY package.json package-lock.json* pnpm-lock.yaml* yarn.lock* ./
-RUN \
-  if [ -f package-lock.json ]; then npm ci --no-audit --no-fund; \
-  elif [ -f pnpm-lock.yaml ]; then npm i -g pnpm && pnpm i --frozen-lockfile; \
-  elif [ -f yarn.lock ]; then yarn install --frozen-lockfile; \
-  else npm i --no-audit --no-fund; fi
-
-# Build
+COPY package.json package-lock.json* yarn.lock* pnpm-lock.yaml* ./
+RUN npm ci || npm install
 COPY . .
-# If you need backend URLs at build-time:
-#   VITE_API_BASE="https://<backend-host>" VITE_WS_URL="wss://<backend-host>/ws" \
+COPY nginx.conf /etc/nginx/conf.d/default.conf   
+
+ARG BUILD_TIME
+ARG VITE_API_BASE
+ENV VITE_BUILD_TIME=$BUILD_TIME
+ENV VITE_API_BASE=$VITE_API_BASE
 RUN npm run build
-
-# ---------- Runtime (Nginx) ----------
 FROM nginx:1.27-alpine
-ENV PORT=8080
-
-# SPA-friendly config
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-# Static files
-COPY --from=builder /app/dist /usr/share/nginx/html
-
-EXPOSE 8080
-#HEALTHCHECK CMD wget -qO- http://localhost:8080/health || exit 1
-
-# No custom entrypoint — use nginx's default
-CMD ["nginx", "-g", "daemon off;"]
-
+COPY --from=build /app/dist /usr/share/nginx/html
+EXPOSE 80 8000 8080
+CMD ["nginx","-g","daemon off;"]

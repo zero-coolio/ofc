@@ -1,22 +1,31 @@
+
+from typing import Optional
 from sqlmodel import Session
-from app.data.repositories import CategoryRepo
-from app.models import Category
+from ..models import Category
+from ..schemas import CategoryCreate
+from ..storage.categories_repo import CategoryRepository
+import logging
+log = logging.getLogger("ofc.services.categories")
 
+class CategoryService:
+    def __init__(self, session: Session):
+        self.repo = CategoryRepository(session)
 
-def create_category(session: Session, *, user_id: int, name: str) -> Category:
-    repo = CategoryRepo(session)
-    if repo.get_by_name_for_user(user_id, name):
-        raise ValueError("Category with that name already exists")
-    return repo.create(user_id=user_id, name=name)
+    def list(self, q: Optional[str] = None):
+        log.info("🧩 Service: list categories q=%s", q)
+        return self.repo.list(starts_with=q)
 
+    def create_if_missing(self, name: str) -> Category:
+        name = name.strip()
+        if not name:
+            raise ValueError("Category name required")
+        found = self.repo.get_by_name(name)
+        if found:
+            log.info("🧩 Service: category exists name=%s id=%s", name, found.id)
+            return found
+        created = self.repo.add(Category(name=name))
+        log.info("🧩 Service: category created id=%s name=%s", created.id, created.name)
+        return created
 
-def list_categories(session: Session, *, user_id: int):
-    return CategoryRepo(session).list_for_user(user_id)
-
-
-def delete_category(session: Session, *, user_id: int, category_id: int):
-    repo = CategoryRepo(session)
-    cat = repo.get_by_id(category_id)
-    if not cat or cat.user_id != user_id:
-        raise LookupError("Category not found")
-    repo.delete(cat)
+    def create(self, payload: CategoryCreate) -> Category:
+        return self.create_if_missing(payload.name)

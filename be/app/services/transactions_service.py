@@ -1,70 +1,51 @@
-from typing import Optional
-from datetime import date
+
+from typing import Optional, List, Tuple
+from datetime import datetime
 from sqlmodel import Session
-from app.data.repositories import TransactionRepo, CategoryRepo
-from app.models import Transaction, Kind
+from ..models import Transaction
+from ..schemas import TransactionCreate
+from ..storage.transactions_repo import TransactionRepository
+from .categories_service import CategoryService
+import logging
 
+log = logging.getLogger("ofc.services.transactions")
 
-def create_transaction(
-    session: Session,
-    *,
-    user_id: int,
-    amount: float,
-    kind: Kind,
-    occurred_at: date,
-    description: Optional[str],
-    category_id: Optional[int]
-) -> Transaction:
-    if category_id is not None:
-        cat = CategoryRepo(session).get_by_id(category_id)
-        if not cat or cat.user_id != user_id:
-            raise ValueError("Invalid category_id")
-    return TransactionRepo(session).create(
-        user_id=user_id,
-        amount=amount,
-        kind=kind,
-        occurred_at=occurred_at,
-        description=description,
-        category_id=category_id,
-    )
+class TransactionService:
+    def __init__(self, session: Session):
+        self.session = session
+        self.repo = TransactionRepository(session)
+        self.categories = CategoryService(session)
 
+    def _normalize_type(self, t: str) -> str:
+        t_norm = (t or "").strip().lower()
+        if t_norm not in ("credit", "debit"):
+            raise ValueError(f"Invalid transaction type: {t}")
+        return t_norm
 
-def list_transactions(
-    session: Session,
-    *,
-    user_id: int,
-    kind: Optional[Kind] = None,
-    category_id: Optional[int] = None
-):
-    return TransactionRepo(session).list_for_user(user_id, kind, category_id)
+    def create(self, payload: TransactionCreate) -> Transaction:
+        log.info("🧩 Service: create called payload=%s", payload.model_dump())
+        t_type = self._normalize_type(payload.type)
+        if payload.category and payload.category.strip():
+            self.categories.create_if_missing(payload.category.strip())
+        amount = payload.amount if t_type == "credit" else -abs(payload.amount)
+        tx = Transaction(amount=amount, type=t_type, description=payload.description, category=payload.category.strip() if payload.category else None, occurred_at=payload.occurred_at)
+        created = self.repo.add(tx)
+        log.info("🧩 Service: transaction created -> %s", created.model_dump())
+        return created
 
+    def list(self, category: Optional[str]=None, type_: Optional[str]=None, start: Optional[datetime]=None, end: Optional[datetime]=None, limit: int=100, offset: int=0) -> Tuple[List[Transaction], int]:
+        if type_:
+            type_ = self._normalize_type(type_)
+        log.info("🧩 Service: list called category=%s type=%s start=%s end=%s limit=%s offset=%s", category, type_, start, end, limit, offset)
+        all_items = self.repo.list_filtered(category, type_, start, end)
+        total = len(all_items)
+        items = all_items[offset: offset + limit]
+        return items, total
 
-def get_transaction(session: Session, *, user_id: int, tx_id: int):
-    tx = TransactionRepo(session).get_by_id(tx_id)
-    if not tx or tx.user_id != user_id:
-        raise LookupError("Transaction not found")
-    return tx
-
-
-def update_transaction(session: Session, *, user_id: int, tx_id: int, **fields):
-    tx = TransactionRepo(session).get_by_id(tx_id)
-    if not tx or tx.user_id != user_id:
-        raise LookupError("Transaction not found")
-    if "category_id" in fields and fields["category_id"] is not None:
-        cat = CategoryRepo(session).get_by_id(fields["category_id"])
-        if not cat or cat.user_id != user_id:
-            raise ValueError("Invalid category_id")
-    return TransactionRepo(session).update(tx, **fields)
-
-
-def delete_transaction(session: Session, *, user_id: int, tx_id: int):
-    tx = TransactionRepo(session).get_by_id(tx_id)
-    if not tx or tx.user_id != user_id:
-        raise LookupError("Transaction not found")
-    TransactionRepo(session).delete(tx)
-
-
-def list_in_range(
-    session: Session, *, user_id: int, start: Optional[date], end: Optional[date]
-):
-    return TransactionRepo(session).list_in_range_for_user(user_id, start, end)
+    def delete(self, tx_id: int) -> bool:
+        log.info("🧩 Service: delete called id=%s", tx_id)
+        tx = self.repo.get(tx_id)
+        if not tx:
+            return False
+        self.repo.delete(tx)
+        return True

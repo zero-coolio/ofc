@@ -1,104 +1,38 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
-from sqlmodel import Session
-from typing import Optional
 
-from app.database import get_session
-from app.models import Kind as ModelKind, User
-from app.schemas import TransactionCreate, TransactionRead, TransactionUpdate
-from app.security import get_current_user
-from app.services import transactions_service as svc
-from datetime import datetime, timezone
-from datetime import datetime, timezone
+from fastapi import APIRouter, Depends, Query, HTTPException
+from typing import Optional
+from datetime import datetime
+from sqlmodel import Session
+from ..database import get_session
+from ..schemas import TransactionCreate, TransactionRead, TransactionsResponse
+from ..services import get_transaction_service, TransactionService
+import logging
+logger = logging.getLogger("ofc.routers.transactions")
 
 router = APIRouter(prefix="/transactions", tags=["transactions"])
 
+@router.post("", response_model=TransactionRead, status_code=201)
+def create_transaction(payload: TransactionCreate, session: Session = Depends(get_session), svc: TransactionService = Depends(get_transaction_service)):
+    logger.info("➡️  create_transaction called payload=%s", payload.model_dump())
+    created = svc.create(payload)
+    logger.info("✅  create_transaction completed id=%s", created.id)
+    return TransactionRead(**created.model_dump())
 
-@router.post("", response_model=TransactionRead, status_code=status.HTTP_201_CREATED)
-def create_transaction(
-    payload: TransactionCreate,
-    session: Session = Depends(get_session),
-    user: User = Depends(get_current_user),
-):
-    try:
-        return svc.create_transaction(session, user_id=user.id, **payload.model_dump())
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-
-@router.get("", response_model=list[TransactionRead])
-def list_transactions(
-    session: Session = Depends(get_session),
-    user: User = Depends(get_current_user),
-    kind: Optional[ModelKind] = Query(default=None),
-    category_id: Optional[int] = Query(default=None),
-):
-    return svc.list_transactions(
-        session, user_id=user.id, kind=kind, category_id=category_id
-    )
-
-
-@router.get("/{tx_id}", response_model=TransactionRead)
-def get_transaction(
-    tx_id: int,
-    session: Session = Depends(get_session),
-    user: User = Depends(get_current_user),
-):
-    try:
-        return svc.get_transaction(session, user_id=user.id, tx_id=tx_id)
-    except LookupError:
-        raise HTTPException(status_code=404, detail="Transaction not found")
-
-
-@router.patch("/{tx_id}", response_model=TransactionRead)
-def update_transaction(
-    tx_id: int,
-    payload: TransactionUpdate,
-    session: Session = Depends(get_session),
-    user: User = Depends(get_current_user),
-):
-    try:
-        return svc.update_transaction(
-            session,
-            user_id=user.id,
-            tx_id=tx_id,
-            **payload.model_dump(exclude_unset=True)
-        )
-    except LookupError:
-        raise HTTPException(status_code=404, detail="Transaction not found")
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
+@router.get("", response_model=TransactionsResponse)
+def list_transactions(session: Session = Depends(get_session), svc: TransactionService = Depends(get_transaction_service),
+                      category: Optional[str]=None, type: Optional[str]=Query(None, description="credit or debit"),
+                      start: Optional[datetime]=None, end: Optional[datetime]=None, limit: int=100, offset: int=0):
+    logger.info("➡️  list_transactions params category=%s type=%s start=%s end=%s limit=%s offset=%s", category, type, start, end, limit, offset)
+    items, total = svc.list(category, type, start, end, limit, offset)
+    logger.info("✅  list_transactions returned=%s items", total)
+    return {"items": [TransactionRead(**i.model_dump()) for i in items], "total": total}
 
 @router.delete("/{tx_id}", status_code=204)
-def delete_transaction(
-    tx_id: int,
-    session: Session = Depends(get_session),
-    user: User = Depends(get_current_user),
-):
-    try:
-        svc.delete_transaction(session, user_id=user.id, tx_id=tx_id)
-    except LookupError:
+def delete_transaction(tx_id: int, session: Session = Depends(get_session), svc: TransactionService = Depends(get_transaction_service)):
+    logger.info("➡️  delete_transaction called id=%s", tx_id)
+    ok = svc.delete(tx_id)
+    if not ok:
+        logger.warning("❌ delete_transaction not_found id=%s", tx_id)
         raise HTTPException(status_code=404, detail="Transaction not found")
+    logger.info("✅  delete_transaction ok id=%s", tx_id)
     return
-
-
-class Transaction:
-
-    def __init__(
-        self,
-        id: str,
-        amount,
-        kind: str,
-        occurred_at: str,  # YYYY-MM-DD
-        description: str,
-        category_id: str = "NAN",  # 0 if null
-        # RFC3339
-    ):
-        self.id = id
-        self.amount = amount
-        self.kind = kind
-        self.occurred_at = occurred_at
-        self.description = description
-        self.category_id = category_id
-
-        self.created_at = now_utc = datetime.now(timezone.utc)

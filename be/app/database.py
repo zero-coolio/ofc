@@ -1,33 +1,15 @@
-from sqlalchemy import Engine
+
 from sqlmodel import SQLModel, create_engine, Session
 import os
-from typing import Optional
-
-DATABASE_URL = os.getenv("OFC_DATABASE_URL", "sqlite:///./ofc")  # .db
-
-eng: Optional[Engine] = None
-
-
-def get_engine(suffix: str = ".db"):
-    if suffix:
-        url = DATABASE_URL + suffix
-    global eng
-    if not eng:
-        eng = create_engine(
-            url,
-            connect_args=(
-                {"check_same_thread": False} if url.startswith("sqlite") else {}
-            ),
-        )
-    return eng
-
-
-def init_db(suffix: str = None) -> Engine:
-    eng = get_engine(suffix)
-    SQLModel.metadata.create_all(eng)
-    return eng
-
-
+DEFAULT_SQLITE_PATH = os.path.join(".", "data", "transactions.db")
+DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{os.getenv('SQLITE_PATH', DEFAULT_SQLITE_PATH)}")
+if DATABASE_URL.startswith("sqlite:///"):
+    db_file = DATABASE_URL.replace("sqlite:///", "", 1)
+    os.makedirs(os.path.dirname(db_file) or ".", exist_ok=True)
+connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
+engine = create_engine(DATABASE_URL, echo=False, connect_args=connect_args)
+def init_db():
+    SQLModel.metadata.create_all(engine)
 def get_session():
-    with Session(eng) as session:
+    with Session(engine) as session:
         yield session

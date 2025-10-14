@@ -1,47 +1,19 @@
-from datetime import date, datetime
-from enum import Enum
-from typing import Optional, List
 
-from sqlmodel import SQLModel, Field, Relationship
-
-
-class Kind(str, Enum):
-    credit = "credit"
-    debit = "debit"
-
-
-class User(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    email: str = Field(index=True, unique=True)
-    name: Optional[str] = None
-    api_key: str = Field(index=True, unique=True)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-
-    categories: List["Category"] = Relationship(back_populates="user")
-    transactions: List["Transaction"] = Relationship(back_populates="user")
-
+from typing import Optional
+from datetime import datetime
+from sqlmodel import SQLModel, Field, UniqueConstraint
 
 class Category(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str = Field(index=True)
     created_at: datetime = Field(default_factory=datetime.utcnow)
-
-    user_id: int = Field(foreign_key="user.id")
-    user: Optional[User] = Relationship(back_populates="categories")
-
-    transactions: List["Transaction"] = Relationship(back_populates="category")
-
+    __table_args__ = (UniqueConstraint("name", name="uq_category_name"),)
 
 class Transaction(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    amount: float = Field(gt=0)
-    kind: Kind
-    occurred_at: date
-    description: Optional[str] = None
+    amount: float
+    type: str
+    description: str
+    category: Optional[str] = Field(default=None, index=True)
+    occurred_at: datetime
     created_at: datetime = Field(default_factory=datetime.utcnow)
-
-    user_id: int = Field(foreign_key="user.id")
-    user: Optional[User] = Relationship(back_populates="transactions")
-
-    category_id: Optional[int] = Field(default=None, foreign_key="category.id")
-    category: Optional[Category] = Relationship(back_populates="transactions")

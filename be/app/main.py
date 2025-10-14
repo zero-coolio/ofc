@@ -1,52 +1,47 @@
-from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
+from .database import init_db
+from .routers import transactions_router, stats_router, categories_router
+from sqlmodel import SQLModel
+from .database import engine
+import logging, sys, os
+from datetime import datetime
 
-from app.database import init_db
-from app.routers import (
-    categories_router,
-    transactions_router,
-    dashboard_router,
-    import_export_router,
-    users_router,
-    ws_router,
-)
-
+logging.basicConfig(level=logging.DEBUG, format="%(asctime)s | %(levelname)-8s | %(name)s | %(message)s",
+                    handlers=[logging.StreamHandler(sys.stdout)])
+logger = logging.getLogger("ofc")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup logic
+    logger.info("startup:init_db (via lifespan)")
     init_db()
     yield
-    # Shutdown logic (optional)
-    print("🔻 Application shutdown complete")
+    logger.info("shutdown:cleanup complete (via lifespan)")
 
+app = FastAPI(title="OFC Transactions API", version="3.3.0", lifespan=lifespan)
 
-app = FastAPI(title="OFC API", version="1.0.0", lifespan=lifespan)
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Routers
-app.include_router(categories_router.router)
-app.include_router(transactions_router.router)
-app.include_router(dashboard_router.router)
-app.include_router(import_export_router.router)
-app.include_router(users_router.router)
-app.include_router(ws_router.router)
-
+BUILD_TIME = os.getenv("BUILD_TIME", "unknown")
 
 @app.get("/health")
 def health():
-    return {"status": "ok"}
+    return {"status":"ok","service":"ofc-backend","time": datetime.utcnow().isoformat()+"Z","build_time": BUILD_TIME}
 
+@app.get("/info")
+def info():
+    return {"name":"Stephen Leonard","email":"steve.j.leonard@gmail.com"}
 
-if __name__ == "__main__":
-    import uvicorn
+@app.post("/reset-db")
+def reset_db():
+    logger.warning("⚠️  RESET-DB endpoint called: dropping and recreating all tables.")
+    SQLModel.metadata.drop_all(engine)
+    SQLModel.metadata.create_all(engine)
+    logger.info("✅  RESET-DB completed successfully.")
+    return {"ok": True, "message": "Database reset complete"}
 
-    uvicorn.run("app.main:app", host="127.0.0.1", port=8000, reload=True)
+app.include_router(transactions_router.router)
+app.include_router(stats_router.router)
+app.include_router(categories_router.router)
