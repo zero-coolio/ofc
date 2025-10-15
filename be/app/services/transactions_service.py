@@ -26,7 +26,9 @@ class TransactionService:
         return t_norm
 
     def create(self, payload: TransactionCreate) -> Transaction:
-        log.error(f"$$$$$$$$$$$$$$ Service: create called payload=[{payload.model_dump()}")
+        log.error(
+            f"$$$$$$$$$$$$$$ Service: create called payload=[{payload.model_dump()}"
+        )
         t_type = self._normalize_type(payload.txn_type)
         if payload.category and payload.category.strip():
             self.categories.create_if_missing(payload.category.strip())
@@ -43,13 +45,13 @@ class TransactionService:
         return created
 
     def list(
-            self,
-            category: Optional[str] = None,
-            type_: Optional[str] = None,
-            start: Optional[datetime] = None,
-            end: Optional[datetime] = None,
-            limit: int = 100,
-            offset: int = 0,
+        self,
+        category: Optional[str] = None,
+        type_: Optional[str] = None,
+        start: Optional[datetime] = None,
+        end: Optional[datetime] = None,
+        limit: int = 100,
+        offset: int = 0,
     ) -> Tuple[List[Transaction], int]:
         try:
             if type_:
@@ -65,7 +67,7 @@ class TransactionService:
             )
             all_items = self.repo.list_filtered(category, type_, start, end)
             total = len(all_items)
-            items = all_items[offset: offset + limit]
+            items = all_items[offset : offset + limit]
             return items, total
 
         except Exception as e:

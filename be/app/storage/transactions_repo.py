@@ -17,11 +17,11 @@ class TransactionRepository(BaseRepository[Transaction]):
         super().__init__(session, Transaction)
 
     def list_filtered(
-            self,
-            category: Optional[str] = None,
-            txn_type: Optional[str] = None,
-            start: Optional[datetime] = None,
-            end: Optional[datetime] = None,
+        self,
+        category: Optional[str] = None,
+        txn_type: Optional[str] = None,
+        start: Optional[datetime] = None,
+        end: Optional[datetime] = None,
     ) -> List[Transaction]:
         q = select(Transaction)
         if category:

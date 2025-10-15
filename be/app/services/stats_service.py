@@ -13,10 +13,10 @@ class StatsService:
         self.repo = TransactionRepository(session)
 
     def balance_over_time(
-            self,
-            start: Optional[datetime] = None,
-            end: Optional[datetime] = None,
-            #            txs_repo: TransactionRepository = D,
+        self,
+        start: Optional[datetime] = None,
+        end: Optional[datetime] = None,
+        #            txs_repo: TransactionRepository = D,
     ) -> List[BalancePoint]:
         log.info("🧩 Service: stats balance_over_time start=%s end=%s", start, end)
         txs = self.repo.list_filtered(start, end)

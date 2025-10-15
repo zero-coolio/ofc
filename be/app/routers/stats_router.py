@@ -14,9 +14,9 @@ router = APIRouter(prefix="/stats", tags=["stats"])
 
 @router.get("/balance_over_time", response_model=List[BalancePoint])
 def balance_over_time(
-        start: Optional[datetime] = None,
-        end: Optional[datetime] = None,
-        svc: StatsService = Depends(get_stats_service),
+    start: Optional[datetime] = None,
+    end: Optional[datetime] = None,
+    svc: StatsService = Depends(get_stats_service),
 ):
     logger.info("➡️  balance_over_time called start=%s end=%s", start, end)
     points = svc.balance_over_time(start, end)

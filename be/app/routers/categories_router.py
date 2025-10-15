@@ -13,9 +13,9 @@ router = APIRouter(prefix="/categories", tags=["categories"])
 
 @router.get("", response_model=List[CategoryRead])
 def list_categories(
-        q: Optional[str] = Query(None, description="starts-with filter"),
-        session: Session = Depends(get_session),
-        svc: CategoryService = Depends(get_category_service),
+    q: Optional[str] = Query(None, description="starts-with filter"),
+    session: Session = Depends(get_session),
+    svc: CategoryService = Depends(get_category_service),
 ):
     logger.info("➡️  list_categories called q=%s", q)
     items = svc.list(q)
@@ -25,9 +25,9 @@ def list_categories(
 
 @router.post("", response_model=CategoryRead, status_code=201)
 def create_category(
-        payload: CategoryCreate,
-        session: Session = Depends(get_session),
-        svc: CategoryService = Depends(get_category_service),
+    payload: CategoryCreate,
+    session: Session = Depends(get_session),
+    svc: CategoryService = Depends(get_category_service),
 ):
     logger.info("➡️  create_category called payload=%s", payload.model_dump())
     c = svc.create(payload)

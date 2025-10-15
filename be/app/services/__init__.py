@@ -7,7 +7,9 @@ from sqlmodel import Session
 from fastapi import FastAPI, Depends
 
 
-def get_transaction_service(session: Session = Depends(get_session)) -> TransactionService:
+def get_transaction_service(
+    session: Session = Depends(get_session),
+) -> TransactionService:
     return TransactionService(session)
 
 
