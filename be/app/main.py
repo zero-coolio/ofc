@@ -60,4 +60,5 @@ def createdb():
     return {
         "status": "ok",
         "service": "ofc-backend",
-        "time": datetime.utcnow
+        "time": datetime.now().isoformat() + "Z",
+        "build_time": BUILD_TIME,
