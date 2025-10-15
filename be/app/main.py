@@ -7,6 +7,7 @@ from sqlmodel import SQLModel
 from app.database import engine, init_db
 import logging, sys, os
 from datetime import datetime
+from app.database import init_db
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -39,6 +40,17 @@ BUILD_TIME = os.getenv("BUILD_TIME", "unknown")
 
 @app.get("/health")
 def health():
+    return {
+        "status"    : "ok",
+        "service"   : "ofc-backend",
+        "time"      : datetime.utcnow().isoformat() + "Z",
+        "build_time": BUILD_TIME,
+    }
+
+
+@app.get("/createdb")
+def health():
+    init_db()
     return {
         "status"    : "ok",
         "service"   : "ofc-backend",

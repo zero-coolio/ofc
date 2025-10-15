@@ -21,18 +21,19 @@ class TransactionService:
     def _normalize_type(self, t: str) -> str:
         t_norm = (t or "").strip().lower()
         if t_norm not in ("credit", "debit"):
-            raise ValueError(f"Invalid transaction type: {t}")
+            log.error(f"Invalid transaction type: {t}")
+            raise ValueError(f"Invalid transaction trx_type: [{t}] ")
         return t_norm
 
     def create(self, payload: TransactionCreate) -> Transaction:
-        log.info("🧩 Service: create called payload=%s", payload.model_dump())
-        t_type = self._normalize_type(payload.type)
+        log.error(f"$$$$$$$$$$$$$$ Service: create called payload=[{payload.model_dump()}")
+        t_type = self._normalize_type(payload.txn_type)
         if payload.category and payload.category.strip():
             self.categories.create_if_missing(payload.category.strip())
         amount = payload.amount if t_type == "credit" else -abs(payload.amount)
         tx = Transaction(
             amount=amount,
-            type=t_type,
+            txn_type=t_type,
             description=payload.description,
             category=payload.category.strip() if payload.category else None,
             occurred_at=payload.occurred_at,

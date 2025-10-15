@@ -2,8 +2,6 @@ from fastapi import APIRouter, Depends, Query, HTTPException
 from typing import Optional
 from datetime import datetime
 
-from sqlmodel import Session
-from app.database import get_session
 from app.schemas import TransactionCreate, TransactionRead, TransactionsResponse
 from app.services import get_transaction_service, TransactionService
 import logging
@@ -18,7 +16,8 @@ def create_transaction(
         payload: TransactionCreate,
         svc: TransactionService = Depends(get_transaction_service),
 ):
-    logger.info("➡️  create_transaction called payload=%s", payload.model_dump())
+    p = payload.model_dump()
+    logger.error(f"-----create_transaction called payload={p}")
     created = svc.create(payload)
     logger.info("✅  create_transaction completed id=%s", created.id)
     return TransactionRead(**created.model_dump())
@@ -29,7 +28,7 @@ def list_transactions(
         category: Optional[str] = None,
         txn_type: Optional[str] = Query("credit", description="credit or debit"),
         start: Optional[datetime] = datetime(2020, 1, 1),
-        end: Optional[datetime] = datetime.now(),
+        end: Optional[datetime] = None,  # datetime.now(),
         limit: int = 100,
         offset: int = 0,
         svc: TransactionService = Depends(get_transaction_service)

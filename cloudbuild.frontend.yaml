@@ -1,0 +1,38 @@
+
+substitutions:
+  _PROJECT_ID: ""
+  _REGION: "us-central1"
+  _REPO: "ofc"
+  _SERVICE: "ofc-frontend"
+  _VITE_API_BASE: "http://localhost:8080"
+
+steps:
+- name: 'gcr.io/cloud-builders/gcloud'
+  args: ['auth','configure-docker','${_REGION}-docker.pkg.dev','-q']
+
+- name: 'gcr.io/cloud-builders/docker'
+  entrypoint: 'bash'
+  args: ['-lc','docker buildx create --use >/dev/null 2>&1 || true']
+
+- name: 'gcr.io/cloud-builders/docker'
+  entrypoint: 'bash'
+  args:
+    - -lc
+    - |
+      IMAGE="${_REGION}-docker.pkg.dev/${_PROJECT_ID}/${_REPO}/${_SERVICE}:latest"
+      docker buildx build --platform linux/amd64,linux/arm64 -t "${IMAGE}"         --build-arg VITE_API_BASE="${_VITE_API_BASE}"         --build-arg BUILD_TIME="$(date -u +%Y-%m-%dT%H:%M:%SZ)" fe --push
+
+- name: 'gcr.io/cloud-builders/gcloud'
+  args:
+    - run
+    - deploy
+    - ${_SERVICE}
+    - --image
+    - ${_REGION}-docker.pkg.dev/${_PROJECT_ID}/${_REPO}/${_SERVICE}:latest
+    - --region
+    - ${_REGION}
+    - --platform
+    - managed
+    - --allow-unauthenticated
+    - --port
+    - "8080"

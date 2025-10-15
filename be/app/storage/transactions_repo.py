@@ -19,15 +19,15 @@ class TransactionRepository(BaseRepository[Transaction]):
     def list_filtered(
             self,
             category: Optional[str] = None,
-            type_: Optional[str] = None,
+            txn_type: Optional[str] = None,
             start: Optional[datetime] = None,
             end: Optional[datetime] = None,
     ) -> List[Transaction]:
         q = select(Transaction)
         if category:
             q = q.where(Transaction.category == category)
-        if type_:
-            q = q.where(Transaction.type == type_)
+        if txn_type:
+            q = q.where(Transaction.txn_type == txn_type)
         if start:
             q = q.where(Transaction.occurred_at >= start)
         if end:

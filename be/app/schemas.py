@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 
 class TransactionCreate(BaseModel):
     amount: float
-    type: str
+    txn_type: str
     description: str
     category: Optional[str] = None
     occurred_at: datetime = Field(..., description="ISO8601 datetime")
@@ -14,7 +14,7 @@ class TransactionCreate(BaseModel):
 class TransactionRead(BaseModel):
     id: int
     amount: float
-    type: str
+    txn_type: str
     description: str
     category: Optional[str] = None
     occurred_at: datetime

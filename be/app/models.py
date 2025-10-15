@@ -13,7 +13,7 @@ class Category(SQLModel, table=True):
 class Transaction(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     amount: float
-    type: str
+    txn_type: str
     description: str
     category: Optional[str] = Field(default=None, index=True)
     occurred_at: datetime
