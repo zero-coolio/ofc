@@ -5035,7 +5035,7 @@
     "RunOnceActivity.git.unshallow": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "git-widget-placeholder": "main",
-    "last_opened_file_path": "/Users/stephenleonard/git/nullEffect/ofc/be/data",
+    "last_opened_file_path": "/Users/stephenleonard/git/nullEffect/ofc/be/app/scripts",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.stylelint": "",
@@ -5052,6 +5052,7 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/app/scripts" />
       <recent name="$PROJECT_DIR$/data" />
       <recent name="$PROJECT_DIR$/app" />
       <recent name="$PROJECT_DIR$/../beV3" />
@@ -5369,7 +5370,7 @@
       <workItem from="1760380331911" duration="607000" />
       <workItem from="1760382295482" duration="22054000" />
       <workItem from="1760449699943" duration="15645000" />
-      <workItem from="1760488129029" duration="8628000" />
+      <workItem from="1760488129029" duration="9150000" />
     </task>
     <servers />
   </component>
@@ -5417,7 +5418,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/app/services/__init__.py</url>
-          <line>18</line>
+          <line>20</line>
           <option name="timeStamp" value="25" />
         </line-breakpoint>
       </breakpoints>
