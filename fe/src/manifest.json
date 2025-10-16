@@ -1,0 +1,17 @@
+{
+  "created_at": "2025-10-15 15:58:03",
+  "files": [
+    "src/index.css",
+    "src/main.tsx",
+    "src/App.tsx",
+    "src/components/Banner.tsx",
+    "src/pages/Readme.tsx",
+    "src/assets/favicon.svg"
+  ],
+  "notes": [
+    "getUrl sanitizes slashes to avoid //",
+    "defensive toArray() parsing for loaders",
+    "POST hardened, cache-busting GETs, health ping",
+    "pure CSS layout for 1/4 + 3/4 panels"
+  ]
+}

@@ -13,8 +13,8 @@ router = APIRouter(prefix="/transactions", tags=["transactions"])
 
 @router.post("", response_model=TransactionRead, status_code=201)
 def create_transaction(
-    payload: TransactionCreate,
-    svc: TransactionService = Depends(get_transaction_service),
+        payload: TransactionCreate,
+        svc: TransactionService = Depends(get_transaction_service),
 ):
     p = payload.model_dump()
     logger.error(f"-----create_transaction called payload={p}")
@@ -25,13 +25,13 @@ def create_transaction(
 
 @router.get("", response_model=TransactionsResponse)
 def list_transactions(
-    category: Optional[str] = None,
-    txn_type: Optional[str] = Query("credit", description="credit or debit"),
-    start: Optional[datetime] = datetime(2020, 1, 1),
-    end: Optional[datetime] = None,  # datetime.now(),
-    limit: int = 100,
-    offset: int = 0,
-    svc: TransactionService = Depends(get_transaction_service),
+        category: Optional[str] = None,
+        txn_type: Optional[str] = Query(None, description="credit or debit"),
+        start: Optional[datetime] = datetime(2020, 1, 1),
+        end: Optional[datetime] = None,  # datetime.now(),
+        limit: int = 100,
+        offset: int = 0,
+        svc: TransactionService = Depends(get_transaction_service),
 ):
     logger.info(
         "➡️  list_transactions params category=%s type=%s start=%s end=%s limit=%s offset=%s",
@@ -49,7 +49,7 @@ def list_transactions(
 
 @router.delete("/{tx_id}", status_code=204)
 def delete_transaction(
-    tx_id: int, svc: TransactionService = Depends(get_transaction_service)
+        tx_id: int, svc: TransactionService = Depends(get_transaction_service)
 ):
     logger.info("➡️  delete_transaction called id=%s", tx_id)
     ok = svc.delete(tx_id)
